@@ -68,8 +68,8 @@
 import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-#from database.models.base import Base
-from models import Base
+from database.models.base import Base
+#from models import Base
 from dotenv import load_dotenv  # 1. Add this import
 
 
