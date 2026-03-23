@@ -1,0 +1,33 @@
+# 1. Python specific (Don't upload junk)
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# 2. Database (Upload the CODE folder, ignore local DATA files)
+# We removed "database/" from here so your python scripts get uploaded
+*.sqlite
+*.db
+*.db-journal
+.neon_local/
+
+# 3. Environment & Secrets
+# Keep these ignored! You should use Cloud Run Secrets instead.
+.env
+.env.local
+.env.*.local
+
+# 4. Version Control
+.git
+.gitignore
+.gitattributes
+
+# 5. Docker files
+# It is safer to let the build context see these
+#!Dockerfile
+#!.dockerignore

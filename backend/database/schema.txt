@@ -1,0 +1,205 @@
+============================================================
+INDORIA CONCIERGE - DATABASE SCHEMA SPECIFICATION
+Architecture: Relational (PostgreSQL / SQLite)
+Security Level: Tier-1 (UUID + Audit Trail + Integrity Constraints)
+Date: January 02, 2026
+Revision: v2.1 (Production-Ready + Enum Constraints)
+============================================================
+
+1. TABLE: admins
+------------------------------------------------------------
+Purpose: Manage staff access and permission hierarchy.
+    - id (UUID, PK): Unique identifier.
+    - full_name (VARCHAR): Legal name.
+    - email (VARCHAR, UNIQUE): Work email. [INDEXED]
+    - password_hash (VARCHAR): Argon2/Bcrypt hashed credential.
+    - role (ENUM): ['SuperAdmin', 'Manager', 'Support'].
+    - is_active (BOOLEAN): Soft-delete flag.
+    - added_by_id (UUID, FK): References admins(id). [ON DELETE SET NULL]
+    - created_at (TIMESTAMPTZ): Records account creation.
+    - last_login (TIMESTAMPTZ): Tracks last activity for security audits.
+
+
+2. TABLE: users
+------------------------------------------------------------
+Purpose: Primary client profiles and luxury preferences.
+    - id (UUID, PK): Unique identifier.
+    - full_name (VARCHAR): Client's name.
+    - email (VARCHAR, UNIQUE): [INDEXED]
+    - phone (VARCHAR): Contact number with country code.
+    - tier (ENUM): ['Silver', 'Gold Maharaja', 'Platinum Imperial'].
+    - loyalty_points (INTEGER): Current points balance.
+    - profile_image (TEXT): URL to cloud-hosted avatar.
+    - preferences (JSONB): { "temp": 21, "mood": "Jazz", "wine": "Malbec" }.
+    - created_at (TIMESTAMPTZ): User registration timestamp.
+
+
+3. TABLE: travel_packages
+------------------------------------------------------------
+Purpose: Stores high-level travel product details.
+    - id (UUID, PK): Unique package identifier.
+    - user_id (UUID, FK): References users(id). [ON DELETE CASCADE]
+    - package_name (VARCHAR): e.g., 'Imperial Heritage Signature'.
+    - destination_city (VARCHAR): [INDEXED]
+    - arrival_date (TIMESTAMPTZ): Scheduled arrival.
+    - duration_nights (INTEGER): Stay length.
+    - hero_image_url (TEXT): High-res destination visual for UI.
+    - inclusions (JSONB): List of perks included in this specific plan.
+    - created_at (TIMESTAMPTZ): Booking timestamp.
+
+
+4. TABLE: itinerary_moments
+------------------------------------------------------------
+Purpose: Granular timeline events for the "Journey" view.
+    - id (UUID, PK): Event identifier.
+    - package_id (UUID, FK): References travel_packages(id). [ON DELETE CASCADE]
+    - scheduled_time (TIMESTAMPTZ): [INDEXED]
+    - title (VARCHAR): e.g., 'Fleet Connection'.
+    - description (TEXT): Detailed notes for the traveler.
+    - location (VARCHAR): Physical meeting point.
+    - icon_class (VARCHAR): FontAwesome class for UI rendering.
+    - status (ENUM): ['Completed', 'Active', 'Upcoming']. [INDEXED]
+
+
+5. TABLE: fleet_assets
+------------------------------------------------------------
+Purpose: Master inventory of luxury vehicles and aircraft.
+    - id (UUID, PK): Unique asset identifier.
+    - name (VARCHAR): e.g., 'Phantom Series II'. [INDEXED]
+    - type (ENUM): ['Luxury Sedan', 'SUV', 'Private Jet', 'Helicopter']. [INDEXED]
+    - license_plate (VARCHAR, UNIQUE): [INDEXED]
+    - image_url (TEXT): Cloudinary URL of the asset.
+    - status (ENUM): ['Available', 'In-Transit', 'Maintenance', 'Decommissioned']. [INDEXED]
+    - fuel_level (INTEGER): Current fuel/charge percentage (0-100).
+    - specifications (JSONB): { "seats": 4, "wifi": true, "engine": "V12" }.
+    - created_at (TIMESTAMPTZ): When asset was added to command.
+
+
+6. TABLE: fleet_assignments
+------------------------------------------------------------
+Purpose: Real-time chauffeur and vehicle tracking (Live Intelligence).
+    - id (UUID, PK): Assignment identifier.
+    - user_id (UUID, FK): References users(id). [ON DELETE CASCADE]
+    - asset_id (UUID, FK): References fleet_assets(id). [ON DELETE SET NULL]
+    - chauffeur_name (VARCHAR): Name of the driver.
+    - chauffeur_rating (NUMERIC): Chauffeur's star rating (0.00 - 5.00).
+    - vehicle_model (VARCHAR): Snapshot of model at time of assignment.
+    - license_plate (VARCHAR): Snapshot of plate at time of assignment.
+    - wifi_password (VARCHAR): Cabin internet credentials.
+    - current_temp (INTEGER): User-controlled cabin climate.
+    - current_mood (VARCHAR): Selected cabin audio/lighting mood.
+    - eta_minutes (INTEGER): [INDEXED] Live arrival countdown.
+    - updated_at (TIMESTAMPTZ): Last telematics update.
+
+
+7. TABLE: payments
+------------------------------------------------------------
+Purpose: Financial ledger and transaction history.
+    - id (UUID, PK): Internal transaction ID.
+    - user_id (UUID, FK): References users(id). [ON DELETE RESTRICT]
+    - transaction_ref (VARCHAR, UNIQUE): [INDEXED] Gateway reference.
+    - amount (NUMERIC): Transaction value.
+    - currency (CHAR 3): ISO currency code (e.g., 'INR').
+    - status (ENUM): ['Pending', 'Completed', 'Failed']. [INDEXED]
+    - description (VARCHAR): Invoice memo.
+    - created_at (TIMESTAMPTZ): Transaction date.
+    - invoice_url (TEXT): Link to generated PDF invoice.
+
+
+------------------------------------------------------------
+8. TABLE: documents
+------------------------------------------------------------
+Purpose: Secure storage for travel credentials and encrypted vault files.
+
+Columns:
+    - id (UUID, PK): 
+        Document identifier. (String 36).
+    - user_id (UUID, FK): 
+        References users(id). [ON DELETE CASCADE].
+    - doc_name (VARCHAR): 
+        User-friendly name, e.g., 'Passport - Main Page'.
+    - doc_type (ENUM): 
+        Values: ['Passport', 'Visa', 'Insurance', 'Health'].
+    - file_url (TEXT): 
+        The secure Cloudinary HTTPS link to view/download the file.
+    - public_id (TEXT): 
+        The specific Cloudinary identifier required for file deletion.
+    - status (ENUM): 
+        Values: ['Verified', 'Pending', 'Expired']. [Default: 'Pending'].
+    - expiry_date (DATE): 
+        [INDEXED] Date when the document expires.
+    - verification_date (TIMESTAMPTZ): 
+        Timestamp when an administrator approved/verified the document.
+    - uploaded_at (TIMESTAMPTZ): 
+        [SERVER DEFAULT: NOW] The initial time of record creation.
+
+Relationships:
+    - user: Many-to-One (Many documents belong to one User).
+------------------------------------------------------------
+
+
+9. TABLE: messages
+------------------------------------------------------------
+Purpose: Private communication between client and concierge.
+    - id (UUID, PK): Message identifier.
+    - user_id (UUID, FK): References users(id). [ON DELETE CASCADE]
+    - sender_role (ENUM): ['user', 'concierge'].
+    - text (TEXT): Message content.
+    - is_read (BOOLEAN): [INDEXED] Read receipt status.
+    - created_at (TIMESTAMPTZ): [INDEXED] Message timestamp.
+
+
+10. TABLE: destinations
+------------------------------------------------------------
+Purpose: Real-time intelligence and marketing for global hotspots.
+    - id (UUID, PK): Unique identifier.
+    - name (VARCHAR, UNIQUE): [INDEXED] (e.g., 'Santorini').
+    - region (VARCHAR): [INDEXED] (e.g., 'Greece').
+    - category (ENUM): ['Beach', 'Mountain', 'City', 'Cultural']. [INDEXED]
+    - price (INTEGER): Starting price for the experience.
+    - excerpt (TEXT): Short summary for UI cards.
+    - status (ENUM): ['Optimal', 'High Peak', 'Restricted']. [INDEXED]
+    - active_vips (INTEGER): Live count of VIPs on-site.
+    - capacity (INTEGER): Resource utilization (0-100).
+    - temp (INTEGER): Real-time temperature in Celsius.
+    - weather (VARCHAR): e.g., 'Clear', 'Rainy'.
+    - image (TEXT): Primary cinematic visual.
+    - gallery (JSONB): Supplementary visuals array.
+    - is_featured (BOOLEAN): [INDEXED] Branding highlight flag.
+    - description (TEXT): Full heritage story.
+    - updated_at (TIMESTAMPTZ): Last intel update timestamp.
+
+
+11. TABLE: destination_itineraries
+------------------------------------------------------------
+Purpose: Fixed daily templates for featured destinations.
+    - id (UUID, PK): Unique identifier.
+    - destination_id (UUID, FK): References destinations(id). [ON DELETE CASCADE]
+    - day_number (INTEGER): The sequential day. [ORDERED]
+    - title (VARCHAR): Heading for the day's theme.
+    - activity (TEXT): Deep description of the experience.
+    - icon (VARCHAR): FontAwesome class for UI.
+
+
+12. TABLE: inquiries
+------------------------------------------------------------
+Purpose: Capture lead generation from the public contact form.
+    - id (UUID, PK): Unique lead identifier.
+    - full_name (VARCHAR): Lead's name.
+    - email (VARCHAR): Contact email. [INDEXED]
+    - status (ENUM): ['New', 'In-Progress', 'Converted', 'Ignored']. [INDEXED]
+    - created_at (TIMESTAMPTZ): Timestamp of inquiry.
+
+
+============================================================
+RELATIONSHIP SUMMARY & INTEGRITY RULES
+============================================================
+1. ADMINS: One admin can create many admins (self-referential hierarchy).
+2. USERS: Primary node. Deletion cascades to Packages, Messages, and Docs.
+3. FLEET: Assets are master inventory. If an asset is deleted, Assignments
+   retain snapshots (model/plate) but set asset_id to NULL for audit history.
+4. DESTINATIONS: Own their itineraries. Deleting a hotspot triggers a 
+   database-level CASCADE to wipe all associated daily itinerary rows.
+5. INDEXING: Applied to all Foreign Keys, Auth fields, and high-frequency 
+   filter columns (status, category, is_featured) for dashboard performance.
+============================================================

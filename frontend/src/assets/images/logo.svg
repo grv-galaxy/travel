@@ -1,0 +1,32 @@
+<svg
+  width="200"
+  height="200"
+  viewBox="0 0 200 200"
+  xmlns="http://www.w3.org/2000/svg"
+>
+  <!-- Outer decorative ring -->
+  <circle
+    cx="100"
+    cy="100"
+    r="90"
+    fill="none"
+    stroke="#C9A24D"
+    stroke-width="6"
+  />
+
+  <!-- Inner ring -->
+  <circle
+    cx="100"
+    cy="100"
+    r="70"
+    fill="none"
+    stroke="#C9A24D"
+    stroke-width="4"
+  />
+
+  <!-- Compass star -->
+  <g fill="#1F2F45" transform="translate(100 100)">
+    <polygon points="0,-55 6,-6 55,0 6,6 0,55 -6,6 -55,0 -6,-6"/>
+    <polygon points="0,-38 4,-4 38,0 4,4 0,38 -4,4 -38,0 -4,-4" fill="#2F4766"/>
+  </g>
+</svg>
