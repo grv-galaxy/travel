@@ -255,47 +255,54 @@ export default {
     async handlePhoneAuth() {
       this.setGlobalLoading(true);
       try {
-        if (window.recaptchaVerifier) {
-          window.recaptchaVerifier.clear();
-          window.recaptchaVerifier = null;
+        const res = await fetch('https://otp-baas.onrender.com/v1/otp/send', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            identifier: '+91' + this.phoneNumber,
+            channel: 'sms'
+           }),
+        });
+        const data = await res.json();
+        if (res.ok) {
+          this.isOtpSent = true;
+        } else {
+          alert("Error "+ data.message); 
         }
-          window.recaptchaVerifier = new RecaptchaVerifier(
-            auth, 
-            'recaptcha-container', 
-            { size: 'invisible',}
-          );
-        
-        const confirmation = await signInWithPhoneNumber(
-          auth, 
-          '+91' + this.phoneNumber, 
-          window.recaptchaVerifier 
-        );
-        this.confirmationResult = confirmation;
-        this.isOtpSent = true;
       } catch (error) {
         console.error('Error sending OTP:', error); 
         alert("Failed to send OTP : " + error.message);
-        if (window.recaptchaVerifier) {
-          window.recaptchaVerifier.clear();
-          window.recaptchaVerifier = null;
-        }
       } finally {
         this.setGlobalLoading(false);
       }
     },
     async verifyOtp() {
-      if (this.otpValue.length <6) return; 
+      if (this.otpValue.length < 6) return;
       this.setGlobalLoading(true);
       try {
-        const result = await this.confirmationResult.confirm(this.otpValue);
-        const firebaseToken = await result.user.getIdToken();
-        const res = await fetch( 'https://travel-xxnc.onrender.com/api/auth/phone', {
+        // 1. Verify with BaaS
+        const baasRes = await fetch('https://your-otp-baas.render.com/v1/otp/verify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            identifier: '+91' + this.phoneNumber,
+            code: this.otpValue
+          }),
+        });
+        const baasData = await baasRes.json();
+
+        if (!baasRes.ok) throw new Error(baasData.message);
+
+        // 2. Send BaaS verificationToken to your Flask Backend
+        const res = await fetch('https://travel-xxnc.onrender.com/api/auth/phone', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ 
-            firebase_token: firebaseToken 
-           }),
+            baas_token: baasData.verificationToken, // The JWT from your Node.js BaaS
+            phone: '+91' + this.phoneNumber 
+          }),
         });
+        
         const data = await res.json();
         if (data.success) {
           localStorage.setItem('user_token', data.token); 
@@ -303,16 +310,14 @@ export default {
           this.closeAuth();
           this.$router.push('/Uhome');
         } else {
-          alert('OTP verification failed: ' + data.message);
+          alert('Login failed: ' + data.message);
         }
       } catch (error) {
-        this.setGlobalLoading(false);
-        alert("Failed to verify OTP. Please try again.");
+        alert("Verification failed: " + error.message);
       } finally {
         this.setGlobalLoading(false);
       }
     },
-
     async handleAdminLogin() {
       if (!this.adminEmail || !this.adminPassword) {
         return alert("Please enter both email and password");

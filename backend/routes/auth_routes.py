@@ -158,10 +158,14 @@ from database.models.user import User
 from flask_bcrypt import Bcrypt
 import requests
 import logging
+import os
+import jwt 
+
 
 # Configure logging for production auditing
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+jwt_secret = os.getenv("JWT_SECRET")
 
 auth_bp = Blueprint('auth', __name__)
 bcrypt = Bcrypt()
@@ -335,22 +339,22 @@ def phone_login():
     Verifies Firebase ID token from phone auth, then issues your app JWT.
     """
     data = request.get_json()
-    firebase_token = data.get('firebase_token')
+    baas_token = data.get('baas_token')
+    phone_number = data.get('phone_number')
 
-    if not firebase_token:
-        return jsonify({"success": False, "message": "Firebase token missing"}), 400
+    if not baas_token or not phone_number:
+        return jsonify({"success": False, "message": "Missing credentials"}), 400
 
     try:
         # Firebase Admin verifies the token server-side
-        decoded = firebase_auth.verify_id_token(firebase_token)
-        phone_number = decoded.get('phone_number')  # e.g. "+919876543210"
+        decoded = jwt.decode(baas_token, jwt_secret, algorithms=["HS256"])
+        if decoded.get('identifier') != phone_number:
+            return jsonify({"success": False, "message": "Token identifier mismatch"}), 401
 
-        if not phone_number:
-            return jsonify({"success": False, "message": "Phone number not found in token"}), 400
-
+    except jwt.ExpiredSignatureError:
+        return jsonify({"success": False, "message": "OTP session expired"}), 401
     except Exception as e:
-        logger.error(f"Firebase token verification failed: {str(e)}")
-        return jsonify({"success": False, "message": "Invalid Firebase token"}), 401
+        return jsonify({"success": False, "message": "Invalid BaaS token"})
 
     db = SessionLocal()
     try:
