@@ -100,6 +100,7 @@
                   ← Change Number or Resend
                 </button>
               </div>
+              <div id="recaptcha-container"></div>
             </div>
 
             <div class="modal-footer">
@@ -142,6 +143,7 @@ export default {
       adminPassword: '',
       isOtpSent: false,
       otpValue: '',
+      confirmationResult: null,
     };
   },
   methods: {
@@ -253,11 +255,16 @@ export default {
     async handlePhoneAuth() {
       this.setGlobalLoading(true);
       try {
-        if (!window.recaptchaVerifier) {
-          window.recaptchaVerifier = new RecaptchaVerifier(auth, 'send-otp-btn', {
-            size: 'invisible',
-          });
-        } 
+        if (window.recaptchaVerifier) {
+          window.recaptchaVerifier.clear();
+          window.recaptchaVerifier = null;
+        }
+          window.recaptchaVerifier = new RecaptchaVerifier(
+            auth, 
+            'recaptcha-container', 
+            { size: 'invisible',}
+          );
+        
         const confirmation = await signInWithPhoneNumber(
           auth, 
           '+91' + this.phoneNumber, 
@@ -267,10 +274,13 @@ export default {
         this.isOtpSent = true;
       } catch (error) {
         console.error('Error sending OTP:', error); 
-        window.recaptchaVerifier = null;
+        alert("Failed to send OTP : " + error.message);
+        if (window.recaptchaVerifier) {
+          window.recaptchaVerifier.clear();
+          window.recaptchaVerifier = null;
+        }
       } finally {
         this.setGlobalLoading(false);
-        alert("Failed to send OTP. Please try again.");
       }
     },
     async verifyOtp() {
@@ -279,7 +289,7 @@ export default {
       try {
         const result = await this.confirmationResult.confirm(this.otpValue);
         const firebaseToken = await result.user.getIdToken();
-        const res = await fetch( 'https://travel-xxnc.onrender.com/api/auth/verify-otp', {
+        const res = await fetch( 'https://travel-xxnc.onrender.com/api/auth/phone', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ 
