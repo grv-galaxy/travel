@@ -131,7 +131,7 @@
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
 
-const API_BASE = 'https://indoria-backend-805083888664.us-central1.run.app/api/admin/fleet/assets';
+const API_BASE = 'https://travel-xxnc.onrender.com/api/admin/fleet/assets';
 
 // --- State Management ---
 const fleet = ref([]);
@@ -205,7 +205,7 @@ const submitAsset = async () => {
     formData.append('fuel', newAsset.value.fuel);
     formData.append('status', newAsset.value.status);
 
-    const response = await axios.post('https://indoria-backend-805083888664.us-central1.run.app/api/admin/fleet/add-asset', formData);
+    const response = await axios.post('https://travel-xxnc.onrender.com/api/admin/fleet/add-asset', formData);
     if (response.data.success) {
       fleet.value.unshift(response.data.asset);
       resetForm();
@@ -762,7 +762,7 @@ onMounted(fetchFleet);
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
 
-const API_BASE = 'https://indoria-backend-805083888664.us-central1.run.app/api/admin/fleet/assets';
+const API_BASE = 'https://travel-xxnc.onrender.com/api/admin/fleet/assets';
 
 // --- State Management ---
 const fleet = ref([]);
@@ -842,7 +842,7 @@ const submitAsset = async () => {
     formData.append('fuel', newAsset.value.fuel);
     formData.append('status', newAsset.value.status);
 
-    const response = await axios.post('https://indoria-backend-805083888664.us-central1.run.app/api/admin/fleet/add-asset', formData);
+    const response = await axios.post('https://travel-xxnc.onrender.com/api/admin/fleet/add-asset', formData);
     if (response.data.success) {
       fleet.value.unshift(response.data.asset);
       resetForm();

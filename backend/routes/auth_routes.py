@@ -326,3 +326,76 @@ def google_login():
         return jsonify({"success": False, "message": "Database transaction failed"}), 500
     finally:
         db.close()
+
+
+# New route in auth.py
+@auth_bp.route('/phone', methods=['POST'])
+def phone_login():
+    """
+    Verifies Firebase ID token from phone auth, then issues your app JWT.
+    """
+    data = request.get_json()
+    firebase_token = data.get('firebase_token')
+
+    if not firebase_token:
+        return jsonify({"success": False, "message": "Firebase token missing"}), 400
+
+    try:
+        # Firebase Admin verifies the token server-side
+        decoded = firebase_auth.verify_id_token(firebase_token)
+        phone_number = decoded.get('phone_number')  # e.g. "+919876543210"
+
+        if not phone_number:
+            return jsonify({"success": False, "message": "Phone number not found in token"}), 400
+
+    except Exception as e:
+        logger.error(f"Firebase token verification failed: {str(e)}")
+        return jsonify({"success": False, "message": "Invalid Firebase token"}), 401
+
+    db = SessionLocal()
+    try:
+        # Find or create user by phone
+        user = db.query(User).filter(User.phone == phone_number).first()
+
+        if not user:
+            placeholder_email = f"pending_{generate_uuid()}@pending.com"
+            user = User(
+                phone=phone_number,
+                full_name="Pending",      # can be updated later in profile
+                email=placeholder_email,
+                tier="Silver",
+                loyalty_points=0,
+                preferences={"mood": "Default"}
+            )
+            db.add(user)
+            db.commit()
+            db.refresh(user)
+
+        access_token = create_access_token(
+            identity=user.phone,
+            additional_claims={
+                "is_admin": False,
+                "role": "User",
+                "username": user.full_name,
+                "tier": user.tier
+            }
+        )
+
+        return jsonify({
+            "success": True,
+            "token": access_token,
+            "user": {
+                "id": str(user.id),
+                "phone": user.phone,
+                "username": user.full_name,
+                "role": "User",
+                "tier": user.tier
+            }
+        }), 200
+
+    except Exception as e:
+        logger.error(f"Phone Auth DB Error: {str(e)}")
+        db.rollback()
+        return jsonify({"success": False, "message": "Database error"}), 500
+    finally:
+        db.close()

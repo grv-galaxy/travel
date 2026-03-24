@@ -127,7 +127,7 @@ const isLoading = ref(true);
 const fetchPublicDestinations = async () => {
   isLoading.value = true;
   try {
-    const response = await axios.get('https://indoria-backend-805083888664.us-central1.run.app/api/admin/destinations');
+    const response = await axios.get('https://travel-xxnc.onrender.com/api/admin/destinations');
     if (response.data.success) {
       destinations.value = response.data.data;
     }
@@ -141,7 +141,7 @@ const fetchPublicDestinations = async () => {
 // Fetch specific trip details including itinerary from the new table
 const openDetails = async (id) => {
   try {
-    const response = await axios.get(`https://indoria-backend-805083888664.us-central1.run.app/api/admin/destinations/${id}/details`);
+    const response = await axios.get(`https://travel-xxnc.onrender.com/api/admin/destinations/${id}/details`);
     if (response.data.success) {
       selectedTrip.value = response.data.data;
       document.body.style.overflow = 'hidden'; // Stop scrolling
@@ -758,7 +758,7 @@ const isModalLoading = ref(false); // Controls the skeleton inside the modal
 const fetchPublicDestinations = async () => {
   isModalLoading.value = true;
   try {
-    const response = await axios.get('https://indoria-backend-805083888664.us-central1.run.app/api/admin/destinations');
+    const response = await axios.get('https://travel-xxnc.onrender.com/api/admin/destinations');
     if (response.data.success) {
       destinations.value = response.data.data;
     }
@@ -779,7 +779,7 @@ const openDetails = async (id) => {
 
   try {
     // 2. Fetch the detailed intelligence
-    const response = await axios.get(`https://indoria-backend-805083888664.us-central1.run.app/api/admin/destinations/${id}/details`);
+    const response = await axios.get(`https://travel-xxnc.onrender.com/api/admin/destinations/${id}/details`);
     
     if (response.data.success) {
       // 3. Populate data and hide skeleton

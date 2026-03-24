@@ -107,7 +107,7 @@ const statusFilters = ['All', 'New', 'In-Progress', 'Converted', 'Ignored']; // 
 const fetchInquiries = async () => {
   isLoading.value = true;
   try {
-    const response = await axios.get('https://indoria-backend-805083888664.us-central1.run.app//api/inquiries/list'); // Your new backend route
+    const response = await axios.get('https://travel-xxnc.onrender.com//api/inquiries/list'); // Your new backend route
     if (response.data.success) {
       inquiries.value = response.data.data;
     }
@@ -129,7 +129,7 @@ const updateInquiryStatus = async (id, newStatus) => {
 
   try {
     // You'll need a new backend endpoint for this: /inquiries/<id>/status
-    const response = await axios.put(`https://indoria-backend-805083888664.us-central1.run.app//api/inquiries/${id}/status`, { status: newStatus });
+    const response = await axios.put(`https://travel-xxnc.onrender.com//api/inquiries/${id}/status`, { status: newStatus });
     if (response.data.success) {
       // Update the local data without re-fetching everything
       const index = inquiries.value.findIndex(i => i.id === id);

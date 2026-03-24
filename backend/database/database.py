@@ -1,60 +1,57 @@
 # import os
+# import sys
+# from pathlib import Path
 # from sqlalchemy import create_engine
 # from sqlalchemy.orm import sessionmaker
-# from database.models.base import Base
-# #sfrom models import Base
+# from dotenv import load_dotenv
 
-# # 1. DATABASE URL CONFIGURATION
-# # We use an environment variable for Production (Neon) 
-# # and a local file for Development (SQLite).
-# BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-# DB_PATH = os.path.join(BASE_DIR, "indoria_concierge.db")
-# DATABASE_URL = 'postgresql://neondb_owner:npg_JTd3pnikMmG5@ep-royal-sound-a1rst6ld-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require'
+# # Load .env from the backend root (one level above /database)
+# load_dotenv(dotenv_path=Path(__file__).resolve().parent.parent / ".env")
 
-# # 2. CREATE THE ENGINE
-# # 'check_same_thread' is only required for SQLite.
-# if DATABASE_URL.startswith("sqlite"):
+# # Fix import path so 'models' package is found
+# sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+# from models import Base
+
+# # 1. FETCH NEON URL
+# DATABASE_URL = os.getenv("DATABASE_URL")
+
+# # 2. CONFIGURE ENGINE FOR NEON
+# if DATABASE_URL:
+#     if "sslmode" not in DATABASE_URL:
+#         DATABASE_URL += "?sslmode=require"
+
 #     engine = create_engine(
-#         DATABASE_URL, connect_args={"check_same_thread": False}
-#     )
-# else:
-#     # Production settings for Neon/PostgreSQL
-#     engine = create_engine(
-#         DATABASE_URL, 
-#         pool_size=10, 
+#         DATABASE_URL,
+#         pool_pre_ping=True,   # Wakes up Neon if it's sleeping
+#         pool_recycle=300,     # Refreshes connections every 5 minutes
+#         pool_size=10,
 #         max_overflow=20
 #     )
+# else:
+#     raise RuntimeError("DATABASE_URL not found! Add it to your .env file or Render environment variables.")
 
 # # 3. SESSION FACTORY
-# # Each request to your API will get its own temporary database session.
 # SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-# # 4. DATABASE INITIALIZATION
+# # 4. INITIALIZE TABLES ON NEON
 # def init_db():
-#     """
-#     Creates all tables in the database based on our modular models.
-#     Run this once at startup or via a setup script.
-#     """
-#     print(f"Connecting to: {DATABASE_URL}")
+#     """Creates tables on Neon if they don't exist."""
 #     try:
-#         # This command scans models/__init__.py and creates everything
 #         Base.metadata.create_all(bind=engine)
-#         print("Success: All luxury vault tables initialized.")
+#         print("Neon Database connected and tables initialized.")
 #     except Exception as e:
-#         print(f"Error initializing database: {e}")
+#         print(f"Neon Connection Error: {e}")
 
-# # 5. DEPENDENCY (For FastAPI/Flask)
 # def get_db():
-#     """
-#     Helper function to provide a database session to API routes.
-#     Ensures the connection is closed after the request is finished.
-#     """
 #     db = SessionLocal()
 #     try:
 #         yield db
 #     finally:
 #         db.close()
 
+
+# if __name__ == "__main__":
+#     init_db()
 
 
 

@@ -338,7 +338,7 @@ const deleteAdmin = (id) => {
 import { ref, computed, onMounted } from 'vue';
 
 // --- CONFIGURATION ---
-const API_BASE_URL = 'https://indoria-backend-805083888664.us-central1.run.app/api/admin';
+const API_BASE_URL = 'https://travel-xxnc.onrender.com/api/admin';
 
 // --- STATE MANAGEMENT ---
 const showAddModal = ref(false);
@@ -901,7 +901,7 @@ const notify = inject('notify');
 const setGlobalLoading = inject('setGlobalLoading');
 
 // --- CONFIGURATION ---
-const API_BASE_URL = 'https://indoria-backend-805083888664.us-central1.run.app/api/admin';
+const API_BASE_URL = 'https://travel-xxnc.onrender.com/api/admin';
 
 // --- STATE MANAGEMENT ---
 const isLoading = ref(true); // Controls skeletons

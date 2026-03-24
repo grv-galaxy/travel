@@ -17,7 +17,7 @@
 #     app.config['CLOUDINARY'] = CloudinaryService
     
 #     # Initialize Plugins
-#     CORS(app, resources={r"/api/*":{"origin":"https://indoria-backend-805083888664.us-central1.run.app/"}})  # Allows Vue to talk to Flask
+#     CORS(app, resources={r"/api/*":{"origin":"https://travel-xxnc.onrender.com/"}})  # Allows Vue to talk to Flask
 #     bcrypt.init_app(app)
 #     jwt.init_app(app)
 
@@ -165,6 +165,12 @@ from flask_bcrypt import Bcrypt
 from dotenv import load_dotenv
 from services.cloudinary_service import CloudinaryService
 from routes import register_routes
+import firebase_admin
+from firebase_admin import credentials, auth as firebase_auth
+
+# Initialize Firebase Admin SDK
+cred = credentials.Certificate('./serviceAccountKey.json')
+firebase_admin.initialize_app(cred)
 
 load_dotenv()
 
@@ -180,8 +186,8 @@ def create_app():
     allowed_origins = [
         "https://indoria.gcodes.co.in",
         "https://www.indoria-gcodes.co.in",
-        "http://localhost:5173",
-        "https://indoriatravelfrontend-fb6b2.web.app"
+        "https://travel-8f96a.web.app",
+        "https://travel-8f96a.firebaseapp.com"
     ]
     
     # ✅ FIXED CORS - explicitly allow content-type

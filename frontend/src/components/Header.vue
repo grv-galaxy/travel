@@ -72,13 +72,32 @@
 
               <div class="divider"><span>OR</span></div>
 
-              <div class="phone-auth">
+              <div v-if="!isOtpSent" class="phone-auth">
                 <div class="input-wrapper">
                   <span class="prefix">+91</span>
                   <input type="tel" v-model="phoneNumber" placeholder="Enter Phone Number" maxlength="10">
                 </div>
                 <button class="btn-primary" @click="handlePhoneAuth" :disabled="phoneNumber.length < 10">
                   {{ authMode === 'login' ? 'Login via OTP' : 'Sign up via OTP' }}
+                </button>
+              </div>
+              <div v-else class="otp-verification">
+                <p class="otp-status">Verification code sent to <strong> +91 {{ phoneNumber }}</strong></p>
+                <div class="otp-input-group">
+                  <input 
+                    type="text" 
+                    v-model="otpValue"
+                    placeholder="Enter 6-digit OTP"
+                    maxlength="6"
+                    class="otp-input"
+                    @keyup.enter="verifyOtp"  
+                    >
+                </div>
+                <button class="btn-primary" @click="verifyOtp" :disabled="otpValue.length < 6">
+                  Verify & Proceed
+                </button>
+                <button class="resend-link" @click="isOtpSent = false">
+                  ← Change Number or Resend
                 </button>
               </div>
             </div>
@@ -107,6 +126,8 @@
 
 <script>
 import router from '../router';
+import { auth } from '../firebase';
+import { RecaptchaVerifier, signInWithPhoneNumber } from 'firebase/auth';
 
 export default {
   inject: ['setGlobalLoading'],
@@ -119,6 +140,8 @@ export default {
       phoneNumber: '',
       adminEmail: '',
       adminPassword: '',
+      isOtpSent: false,
+      otpValue: '',
     };
   },
   methods: {
@@ -176,6 +199,9 @@ export default {
     },
     closeAuth() {
       this.showAuth = false;
+      this.isOtpSent = false;
+      this.otpValue = '';
+      this.phoneNumber = '';
       document.body.style.overflow = 'auto';
       // Reset admin fields on close
       this.adminEmail = '';
@@ -203,7 +229,7 @@ export default {
     },
     async verifyGoogleToken(token) {
       try {
-        const res = await fetch('https://indoria-backend-805083888664.us-central1.run.app/api/auth/google', {
+        const res = await fetch('https://travel-xxnc.onrender.com/api/auth/google', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ token }),
@@ -224,9 +250,59 @@ export default {
         this.setGlobalLoading(false); 
       }
     },
-    handlePhoneAuth() {
-      alert(`OTP sent to +91 ${this.phoneNumber}`);
+    async handlePhoneAuth() {
+      this.setGlobalLoading(true);
+      try {
+        if (!window.recaptchaVerifier) {
+          window.recaptchaVerifier = new RecaptchaVerifier(auth, 'send-otp-btn', {
+            size: 'invisible',
+          });
+        } 
+        const confirmation = await signInWithPhoneNumber(
+          auth, 
+          '+91' + this.phoneNumber, 
+          window.recaptchaVerifier 
+        );
+        this.confirmationResult = confirmation;
+        this.isOtpSent = true;
+      } catch (error) {
+        console.error('Error sending OTP:', error); 
+        window.recaptchaVerifier = null;
+      } finally {
+        this.setGlobalLoading(false);
+        alert("Failed to send OTP. Please try again.");
+      }
     },
+    async verifyOtp() {
+      if (this.otpValue.length <6) return; 
+      this.setGlobalLoading(true);
+      try {
+        const result = await this.confirmationResult.confirm(this.otpValue);
+        const firebaseToken = await result.user.getIdToken();
+        const res = await fetch( 'https://travel-xxnc.onrender.com/api/auth/verify-otp', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            firebase_token: firebaseToken 
+           }),
+        });
+        const data = await res.json();
+        if (data.success) {
+          localStorage.setItem('user_token', data.token); 
+          localStorage.setItem('user_data', JSON.stringify(data.user));
+          this.closeAuth();
+          this.$router.push('/Uhome');
+        } else {
+          alert('OTP verification failed: ' + data.message);
+        }
+      } catch (error) {
+        this.setGlobalLoading(false);
+        alert("Failed to verify OTP. Please try again.");
+      } finally {
+        this.setGlobalLoading(false);
+      }
+    },
+
     async handleAdminLogin() {
       if (!this.adminEmail || !this.adminPassword) {
         return alert("Please enter both email and password");
@@ -234,7 +310,7 @@ export default {
       this.setGlobalLoading(true);
       try {
         // Fixed typo: locallhost -> localhost
-        const response = await fetch('https://indoria-backend-805083888664.us-central1.run.app/api/auth/admin-login', {
+        const response = await fetch('https://travel-xxnc.onrender.com/api/auth/admin-login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -657,6 +733,54 @@ input {
   .logo-spacer {
     display: none;
   }
+}
+
+/* OTP Specific Styling */
+.otp-status {
+  font-size: 0.85rem;
+  color: #64748b;
+  margin-bottom: 20px;
+}
+
+.otp-field {
+  text-align: center;
+  font-size: 1.5rem;
+  letter-spacing: 8px;
+  font-weight: 700;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  padding: 15px;
+  background: #f8fafc;
+  transition: border-color 0.3s;
+}
+
+.otp-field:focus {
+  border-color: #fbbf24;
+  background: white;
+}
+
+.resend-link {
+  background: none;
+  border: none;
+  margin-top: 15px;
+  font-size: 0.8rem;
+  color: #94a3b8;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.resend-link:hover {
+  color: #fbbf24;
+}
+
+/* Ensure the button matches the height of inputs for consistency */
+.btn-primary {
+  transition: transform 0.2s, background-color 0.2s;
+}
+
+.btn-primary:active {
+  transform: scale(0.98);
 }
 
 /* ================= SMALL SCREENS ================= */

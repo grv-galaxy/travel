@@ -226,7 +226,7 @@ const newDest = ref({
 // --- Fetch Logic ---
 const fetchDestinations = async () => {
   try {
-    const response = await axios.get('https://indoria-backend-805083888664.us-central1.run.app//api/admin/destinations');
+    const response = await axios.get('https://travel-xxnc.onrender.com//api/admin/destinations');
     if (response.data.success) destinations.value = response.data.data;
   } catch (error) {
     console.error("Fetch Error:", error);
@@ -268,7 +268,7 @@ const editHotspot = async (loc) => {
 
   // Fetch full details (including itinerary) for this ID
   try {
-    const res = await axios.get(`https://indoria-backend-805083888664.us-central1.run.app//api/destinations/${loc.id}/details`);
+    const res = await axios.get(`https://travel-xxnc.onrender.com//api/destinations/${loc.id}/details`);
     if (res.data.success) {
       itinerarySteps.value = res.data.data.itinerary || [];
     }
@@ -326,8 +326,8 @@ const submitDestination = async () => {
     formData.append('itinerary', JSON.stringify(itinerarySteps.value));
 
     const url = isEditing.value 
-      ? `https://indoria-backend-805083888664.us-central1.run.app//api/admin/destinations/${currentEditId.value}`
-      : 'https://indoria-backend-805083888664.us-central1.run.app//api/admin/destinations/add';
+      ? `https://travel-xxnc.onrender.com//api/admin/destinations/${currentEditId.value}`
+      : 'https://travel-xxnc.onrender.com//api/admin/destinations/add';
     
     const method = isEditing.value ? 'put' : 'post';
     const response = await axios[method](url, formData);
@@ -347,7 +347,7 @@ const submitDestination = async () => {
 const deleteHotspot = async (id) => {
   if (!confirm("Decommission this hotspot from the global map?")) return;
   try {
-    const res = await axios.delete(`https://indoria-backend-805083888664.us-central1.run.app//api/admin/destinations/${id}`);
+    const res = await axios.delete(`https://travel-xxnc.onrender.com//api/admin/destinations/${id}`);
     if (res.data.success) {
       destinations.value = destinations.value.filter(d => d.id !== id);
     }
@@ -1137,7 +1137,7 @@ const newDest = ref({
 const fetchDestinations = async () => {
   isLoading.value = true;
   try {
-    const response = await axios.get('https://indoria-backend-805083888664.us-central1.run.app//api/admin/destinations');
+    const response = await axios.get('https://travel-xxnc.onrender.com//api/admin/destinations');
     if (response.data.success) destinations.value = response.data.data;
   } catch (error) {
     console.error("Fetch Error:", error);
@@ -1183,7 +1183,7 @@ const editHotspot = async (loc) => {
 
   // Fetch full details (including itinerary) for this ID
   try {
-    const res = await axios.get(`https://indoria-backend-805083888664.us-central1.run.app/api/destinations/${loc.id}/details`);
+    const res = await axios.get(`https://travel-xxnc.onrender.com/api/destinations/${loc.id}/details`);
     if (res.data.success) {
       itinerarySteps.value = res.data.data.itinerary || [];
     }
@@ -1238,14 +1238,14 @@ const submitDestination = async () => {
     formData.append('itinerary', JSON.stringify(itinerarySteps.value));
 
     const url = isEditing.value 
-      ? `https://indoria-backend-805083888664.us-central1.run.app/api/admin/destinations/${currentEditId.value}`
-      : 'https://indoria-backend-805083888664.us-central1.run.app/api/admin/destinations/add';
+      ? `https://travel-xxnc.onrender.com/api/admin/destinations/${currentEditId.value}`
+      : 'https://travel-xxnc.onrender.com/api/admin/destinations/add';
     
     const method = isEditing.value ? 'put' : 'post';
     const response = await axios[method](url, formData);
 
     if (response.data.success) {
-      const updatedList = await axios.get('https://indoria-backend-805083888664.us-central1.run.app/api/admin/destinations');
+      const updatedList = await axios.get('https://travel-xxnc.onrender.com/api/admin/destinations');
       destinations.value = updatedList.data.data;
       closeModal();
     }
@@ -1260,7 +1260,7 @@ const submitDestination = async () => {
 const deleteHotspot = async (id) => {
   if (!confirm("Decommission this hotspot from the global map?")) return;
   try {
-    const res = await axios.delete(`https://indoria-backend-805083888664.us-central1.run.app/api/admin/destinations/${id}`);
+    const res = await axios.delete(`https://travel-xxnc.onrender.com/api/admin/destinations/${id}`);
     if (res.data.success) {
       destinations.value = destinations.value.filter(d => d.id !== id);
     }

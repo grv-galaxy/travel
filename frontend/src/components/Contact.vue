@@ -123,7 +123,7 @@ const handleSubmit = async () => {
     };
 
     // API Call to the new backend route
-    const response = await axios.post('https://indoria-backend-805083888664.us-central1.run.app//api/inquiries/submit', payload);
+    const response = await axios.post('https://travel-xxnc.onrender.com//api/inquiries/submit', payload);
 
     if (response.data.success) {
       showModal.value = true;

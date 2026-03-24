@@ -4,3 +4,5 @@ node_modules/
 venv/
 __pycache__/
 .DS_Store
+backend/serviceAccountKey.json
+frontend/src/firebase.js

@@ -107,7 +107,7 @@ const isLoading = ref(false);
 const fetchTravelers = async () => {
   isLoading.value = true;
   try{
-    const response = await fetch(`https://indoria-backend-805083888664.us-central1.run.app//api/admin/travelers?search=${searchQuery.value}`);
+    const response = await fetch(`https://travel-xxnc.onrender.com//api/admin/travelers?search=${searchQuery.value}`);
     const result = await response.json();
 
     if (result.success){
@@ -661,7 +661,7 @@ const fetchTravelers = async () => {
   hasError.value = false;
 
   try {
-    const baseUrl = 'https://indoria-backend-805083888664.us-central1.run.app/api/admin/travelers';
+    const baseUrl = 'https://travel-xxnc.onrender.com/api/admin/travelers';
     const url = new URL(baseUrl);
     if (searchQuery.value) url.searchParams.append('search', searchQuery.value);
 

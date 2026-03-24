@@ -572,7 +572,7 @@ const fetchDocuments = async () => {
   }
   isLoading.value = true;
   try {
-    const response = await axios.get('https://indoria-backend-805083888664.us-central1.run.app/api/user/documents', { headers });
+    const response = await axios.get('https://travel-xxnc.onrender.com/api/user/documents', { headers });
     
     // Safety check: ensure response data is an array
     const data = Array.isArray(response.data) ? response.data : [];
@@ -621,7 +621,7 @@ const handleFileSelection = async (event) => {
   isUploading.value = true;
 
   try {
-    const response = await axios.post('https://indoria-backend-805083888664.us-central1.run.app/api/user/documents/upload', formData, {
+    const response = await axios.post('https://travel-xxnc.onrender.com/api/user/documents/upload', formData, {
       headers: {
         ...getCustomHeaders(),
         'Content-Type': 'multipart/form-data'
@@ -663,7 +663,7 @@ const getStatusClass = (status) => {
 const handleDelete = async (id) => {
   if (!confirm("Permanent deletion from secure vault?")) return;
   try {
-    await axios.delete(`https://indoria-backend-805083888664.us-central1.run.app/api/user/documents/${id}`, {
+    await axios.delete(`https://travel-xxnc.onrender.com/api/user/documents/${id}`, {
       headers: getCustomHeaders()
     });
     documents.value = documents.value.filter(d => d.id !== id);

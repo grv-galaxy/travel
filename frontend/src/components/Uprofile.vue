@@ -156,7 +156,7 @@ const fetchProfile = async () => {
   loading.value = true
   try {
     const token = localStorage.getItem('user_token')
-    const response = await axios.get('https://indoria-backend-805083888664.us-central1.run.app/api/user/profile', {
+    const response = await axios.get('https://travel-xxnc.onrender.com/api/user/profile', {
       headers: { Authorization: `Bearer ${token}` }
     })
     
@@ -191,7 +191,7 @@ const saveChanges = async () => {
       profile_image: user.value.profile_image
     }
 
-    const response = await axios.put('https://indoria-backend-805083888664.us-central1.run.app/api/user/profile/update', updateData, {
+    const response = await axios.put('https://travel-xxnc.onrender.com/api/user/profile/update', updateData, {
       headers: { Authorization: `Bearer ${token}` }
     })
 
