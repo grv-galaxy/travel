@@ -185,9 +185,10 @@ def create_app():
 
     allowed_origins = [
         "https://indoria.gcodes.co.in",
-        "https://www.indoria-gcodes.co.in",
+        "https://www.indoria.gcodes.co.in",
         "https://travel-8f96a.web.app",
-        "https://travel-8f96a.firebaseapp.com"
+        "https://travel-8f96a.firebaseapp.com",
+
     ]
     
     # ✅ FIXED CORS - explicitly allow content-type
@@ -201,10 +202,10 @@ def create_app():
     bcrypt.init_app(app)
     jwt.init_app(app)
 
-    @app.before_request
-    def handle_preflight():
-        if request.method == "OPTIONS":
-            return '', 200
+    # @app.before_request
+    # def handle_preflight():
+    #     if request.method == "OPTIONS":
+    #         return '', 200
 
     register_routes(app)
 
