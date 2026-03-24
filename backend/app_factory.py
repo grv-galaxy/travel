@@ -194,9 +194,9 @@ def create_app():
     # ✅ FIXED CORS - explicitly allow content-type
     CORS(app, 
          origins=allowed_origins,
-         allow_headers=['Content-Type', 'Authorization', '*'],
+         allow_headers=['Content-Type', 'Authorization'],
          methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-         expose_headers=['Content-Type'],
+         expose_headers=['Content-Type', 'Authorization'],
          supports_credentials=True)
     
     bcrypt.init_app(app)
