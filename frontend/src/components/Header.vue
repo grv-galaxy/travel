@@ -281,7 +281,7 @@ export default {
       this.setGlobalLoading(true);
       try {
         // 1. Verify with BaaS
-        const baasRes = await fetch('https://your-otp-baas.render.com/v1/otp/verify', {
+        const baasRes = await fetch('https://otp-baas.onrender.com/v1/otp/verify', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
