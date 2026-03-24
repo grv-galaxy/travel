@@ -165,12 +165,12 @@ from flask_bcrypt import Bcrypt
 from dotenv import load_dotenv
 from services.cloudinary_service import CloudinaryService
 from routes import register_routes
-import firebase_admin
-from firebase_admin import credentials, auth as firebase_auth
+# import firebase_admin
+# from firebase_admin import credentials, auth as firebase_auth
 
-# Initialize Firebase Admin SDK
-cred = credentials.Certificate('./serviceAccountKey.json')
-firebase_admin.initialize_app(cred)
+# # Initialize Firebase Admin SDK
+# cred = credentials.Certificate('./serviceAccountKey.json')
+# firebase_admin.initialize_app(cred)
 
 load_dotenv()
 
