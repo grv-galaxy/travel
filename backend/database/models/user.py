@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Integer, Enum, Text, JSON, DateTime, Numeric
+from sqlalchemy import Column, String, Integer, Enum, Text, JSON, DateTime, Numeric, Boolean
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from datetime import datetime 
@@ -13,9 +13,13 @@ class User(Base):
     # Basic Identity
     full_name = Column(String(255), nullable=False)
     email = Column(String(255), unique=True, nullable=False, index=True)
-    phone = Column(String(20))
+    phone = Column(String(20), unique=True, nullable=True, index=True)
+
     #password = Column(String(255))
-    
+    is_email_verified = Column(Boolean, default=False) 
+    is_phone_verified = Column(Boolean, default=False)
+    auth_provider = Column(String(20), default='google')
+
     # Membership & Tier System (e.g., 'Gold Maharaja')
     tier = Column(Enum('Silver', 'Gold Maharaja', 'Platinum Imperial', name='user_tiers'), default='Gold Maharaja')
     loyalty_points = Column(Integer, default=0)

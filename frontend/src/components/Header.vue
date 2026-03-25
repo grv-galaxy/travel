@@ -42,7 +42,7 @@
             <div class="modal-header">
               <h2 v-if="authMode === 'admin'">Staff Concierge</h2>
               <h2 v-else>{{ authMode === 'login' ? 'Welcome Back' : 'Join Indoria Journeys' }}</h2>
-              
+
               <p v-if="authMode === 'admin'">Authorized access only.</p>
               <p v-else>{{ authMode === 'login' ? 'Login to access your bookings' : 'Create an account to start planning' }}</p>
             </div>
@@ -50,10 +50,10 @@
             <div v-if="authMode === 'admin'" class="auth-methods">
               <div class="admin-auth-fields">
                 <div class="input-wrapper admin-input">
-                   <input type="email" v-model="adminEmail" placeholder="Work Email" required>
+                  <input type="email" v-model="adminEmail" placeholder="Work Email" required>
                 </div>
                 <div class="input-wrapper admin-input">
-                   <input type="password" v-model="adminPassword" placeholder="Password" required>
+                  <input type="password" v-model="adminPassword" placeholder="Password" required>
                 </div>
                 <button class="btn-primary" @click="handleAdminLogin">
                   Verify Credentials
@@ -84,14 +84,8 @@
               <div v-else class="otp-verification">
                 <p class="otp-status">Verification code sent to <strong> +91 {{ phoneNumber }}</strong></p>
                 <div class="otp-input-group">
-                  <input 
-                    type="text" 
-                    v-model="otpValue"
-                    placeholder="Enter 6-digit OTP"
-                    maxlength="6"
-                    class="otp-input"
-                    @keyup.enter="verifyOtp"  
-                    >
+                  <input type="text" v-model="otpValue" placeholder="Enter 6-digit OTP" maxlength="6" class="otp-input"
+                    @keyup.enter="verifyOtp">
                 </div>
                 <button class="btn-primary" @click="verifyOtp" :disabled="otpValue.length < 6">
                   Verify & Proceed
@@ -100,7 +94,7 @@
                   ← Change Number or Resend
                 </button>
               </div>
-              <div id="recaptcha-container"></div>
+              <!-- <div id="recaptcha-container"></div> -->
             </div>
 
             <div class="modal-footer">
@@ -127,15 +121,13 @@
 
 <script>
 import router from '../router';
-import { auth } from '../firebase';
-import { RecaptchaVerifier, signInWithPhoneNumber } from 'firebase/auth';
 
 export default {
   inject: ['setGlobalLoading'],
   data() {
     return {
       isMenuOpen: false,
-      activeSection: "home", 
+      activeSection: "home",
       showAuth: false,
       authMode: 'login', // 'login', 'signup', or 'admin'
       phoneNumber: '',
@@ -143,7 +135,6 @@ export default {
       adminPassword: '',
       isOtpSent: false,
       otpValue: '',
-      confirmationResult: null,
     };
   },
   methods: {
@@ -191,7 +182,7 @@ export default {
     handleEsc(e) {
       if (e.key === "Escape") {
         this.isMenuOpen = false;
-        if(this.showAuth) this.closeAuth();
+        if (this.showAuth) this.closeAuth();
       }
     },
     openAuth(mode) {
@@ -214,7 +205,7 @@ export default {
 
       //new loading overlay
       this.setGlobalLoading(true);
-      
+
       const client = google.accounts.oauth2.initTokenClient({
         client_id: '749329503754-0iu1rkjrvc8e3k0vtdmsf2i2usi02s3n.apps.googleusercontent.com',
         scope: 'openid email profile',
@@ -223,7 +214,7 @@ export default {
           if (response.access_token) {
             await this.verifyGoogleToken(response.access_token);
           } else {
-            this.setGlobalLoading(false); 
+            this.setGlobalLoading(false);
           }
         },
       });
@@ -238,7 +229,7 @@ export default {
         });
         const data = await res.json();
         if (data.success) {
-          localStorage.setItem('user_token', data.token); 
+          localStorage.setItem('user_token', data.token);
           localStorage.setItem('user_data', JSON.stringify(data.user));
           this.closeAuth();
           this.$router.push('/Uhome');
@@ -249,7 +240,7 @@ export default {
         console.error('Error verifying Google token:', error);
         alert('An error occurred during Google authentication.');
       } finally {
-        this.setGlobalLoading(false); 
+        this.setGlobalLoading(false);
       }
     },
     async handlePhoneAuth() {
@@ -258,19 +249,19 @@ export default {
         const res = await fetch('https://otp-baas.onrender.com/v1/otp/send', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
+          body: JSON.stringify({
             identifier: '+91' + this.phoneNumber,
             channel: 'sms'
-           }),
+          }),
         });
         const data = await res.json();
         if (res.ok) {
           this.isOtpSent = true;
         } else {
-          alert("Error "+ data.message); 
+          alert("Error " + data.message);
         }
       } catch (error) {
-        console.error('Error sending OTP:', error); 
+        console.error('Error sending OTP:', error);
         alert("Failed to send OTP : " + error.message);
       } finally {
         this.setGlobalLoading(false);
@@ -297,15 +288,15 @@ export default {
         const res = await fetch('https://travel-xxnc.onrender.com/api/auth/phone', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
+          body: JSON.stringify({
             baas_token: baasData.verificationToken, // The JWT from your Node.js BaaS
-            phone: '+91' + this.phoneNumber 
+            phone_number: '+91' + this.phoneNumber
           }),
         });
-        
+
         const data = await res.json();
         if (data.success) {
-          localStorage.setItem('user_token', data.token); 
+          localStorage.setItem('user_token', data.token);
           localStorage.setItem('user_data', JSON.stringify(data.user));
           this.closeAuth();
           this.$router.push('/Uhome');
@@ -348,8 +339,9 @@ export default {
         console.error('Error during admin login:', error);
         alert("Server error. Please try again later.");
       } finally {
-        this.setGlobalLoading(false);  
-    }
+        this.setGlobalLoading(false);
+      }
+    },
   },
   mounted() {
     if (!window.google) {
@@ -368,7 +360,6 @@ export default {
     document.removeEventListener("click", this.handleOutsideClick);
     window.removeEventListener("keydown", this.handleEsc);
   },
-}
 }
 </script>
 
@@ -701,7 +692,8 @@ input {
 }
 
 .admin-btn {
-  background: #1a150e !important; /* Darker, more formal button */
+  background: #1a150e !important;
+  /* Darker, more formal button */
 }
 
 /* ================= MOBILE SLIDE MENU ================= */
