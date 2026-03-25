@@ -7,7 +7,7 @@ from flask_bcrypt import Bcrypt
 import requests
 import logging
 import os
-import PyJWT as jwt
+import jwt
 import uuid
 
 def generate_uuid():
